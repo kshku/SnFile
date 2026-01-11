@@ -21,9 +21,9 @@ static void test_path_utils(void) {
     assert(strcmp(sn_path_extension("/a/b/c.txt"), "txt") == 0);
     assert(sn_path_extension("/a/b/c") == NULL);
 
-    char p2[256] = "a/./b/../c//d";
+    char p2[256] = "a/.//b/../c/d";
     sn_path_normalize(p2);
-    assert(strcmp(p2, "a/c//d") == 0);
+    assert(strcmp(p2, "a//c/d") == 0);
 
     printf("[OK] path utils\n");
 }

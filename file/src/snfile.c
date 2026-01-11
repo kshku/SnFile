@@ -52,6 +52,7 @@ void sn_path_normalize(char* path) {
                         write = last2_sep;
                         last_sep = last2_sep;
 
+                        while (last2_sep != path && *last2_sep == SN_PATH_SEPARATOR) --last2_sep;
                         while (last2_sep != path && *last2_sep != SN_PATH_SEPARATOR) --last2_sep;
                     } else {
                         write = last_sep;
