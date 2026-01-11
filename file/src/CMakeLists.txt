@@ -5,6 +5,7 @@ set(HEADERFILES
 )
 
 set(SRCS
+    snfile.c
 )
 
 set(SPECIFIC_SRCS

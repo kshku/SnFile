@@ -72,7 +72,7 @@ int64_t sn_file_read(snFile *file, void *buffer, uint64_t size) {
     DWORD size1 = size - size2;
 
     if (!ReadFile(HDL(file), buffer, size1, &read1, NULL)) return -1;
-    if (size2 && !ReadFile(HDL(file), buffer, size2, &read2, NULL)) return -1;
+    if (size2 && !ReadFile(HDL(file), buffer + size1, size2, &read2, NULL)) return -1;
 
     return (int64_t)read1 + read2;
 }
@@ -85,7 +85,7 @@ int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size) {
     DWORD size1 = size - size2;
 
     if (!WriteFile(HDL(file), buffer, size1, &written1, NULL)) return -1;
-    if (size2 && !WriteFile(HDL(file), buffer, size2, &written2, NULL)) return -1;
+    if (size2 && !WriteFile(HDL(file), buffer + size1, size2, &written2, NULL)) return -1;
 
     return (int64_t)written1 + written2;
 }
@@ -148,9 +148,9 @@ bool sn_dir_read(snDir* dir, snDirEntry* entry) {
     *entry = (snDirEntry) {
         .name = data->cFileName;
         .is_directory = (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        .is_file = !entry->is_dir;
-        .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPRSE_POINT) != 0;
+        .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0;
     };
+    entry->is_file = !entry->is_directory;
 
     return true;
 }
@@ -181,7 +181,8 @@ bool sn_file_delete(const char* path) {
 }
 
 bool sn_dir_create(const char* path, bool recursive) {
-    if (!recursive) return CreateDirectoryA(path, NULL);
+    if (!recursive) return CreateDirectoryA(path, NULL)
+        || GetLastError() == ERROR_ALREADY_EXISTS;
 
     char buffer[1024] = {0};
     for (size_t i = 0; path[i]; ++i) {
@@ -189,7 +190,7 @@ bool sn_dir_create(const char* path, bool recursive) {
         buffer[i] = path[i];
         if (path[i] == '\\' || path[i] == '/') {
             buffer[i] = 0;
-            if (!CreateDirectoryA(buffer, NULL)) return false;
+            if (!CreateDirectoryA(buffer, NULL) && GetLastError() != ERROR_ALREADY_EXISTS) return false;
             buffer[i] = SN_PATH_SEPARATOR;
         }
     }

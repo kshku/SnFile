@@ -32,21 +32,22 @@ bool sn_path_join(char *dst, size_t dst_size, const char *a, const char *b) {
 void sn_path_normalize(char* path) {
     char *last_sep = path;
     char *last2_sep = path;
-    size_t dots = 0;
+    size_t dots;
     char *write = path;
     for (char *read = path; *read; ++read, ++write) {
         switch (*read) {
             case '\\':
             case '/':
                 *write = SN_PATH_SEPARATOR;
-                last2_sep = last_sep;
+                // We might have something like "a/./b/../c//e/../d" which is valid
+                if (last_sep != path && *(write - 1) != SN_PATH_SEPARATOR) last2_sep = last_sep;
                 last_sep = write;
                 break;
             case '.':
                 dots = 1;
                 if (*(read + dots) == '.') ++dots;
 
-                if (*(read + dots) == '\\' || *(read + dots) == '/') {
+                if (*(read + dots) == '\\' || *(read + dots) == '/' || *(read + dots) == 0) {
                     if (dots == 2) {
                         write = last2_sep;
                         last_sep = last2_sep;
@@ -55,9 +56,8 @@ void sn_path_normalize(char* path) {
                     } else {
                         write = last_sep;
                     }
+                    read += dots;
                 }
-
-                dots = 0;
                 break;
             default:
                 *write = *read;
@@ -70,7 +70,7 @@ void sn_path_normalize(char* path) {
 const char* sn_path_filename(const char* path) {
     const char *last = path;
     for (const char *p = path; *p; ++p)
-        if (p == '\\' || p == '/') last = p + 1;
+        if (*p == '\\' || *p == '/') last = p + 1;
 
     return last;
 }
@@ -80,7 +80,7 @@ const char* sn_path_extension(const char* path) {
     const char *dot = NULL;
 
     for (const char *p = name; *p; ++p)
-        if (p == '.') dot = p;
+        if (*p == '.') dot = p;
 
     return dot ? dot + 1 : NULL;
 }

@@ -206,7 +206,7 @@ SN_API bool sn_path_join(char* dst, size_t dst_size, const char* a, const char* 
  * Resolves `.` and `..`, and Fixes separators.
  *
  * @note Modifies the path passed as argument.
- * @note If '..' is found before separator, it will be just discarded.
+ * @note If '..' is found before any separator, it will be just discarded.
  *
  * @param path Pointer to path buffer.
  */
@@ -277,6 +277,8 @@ SN_API bool sn_file_delete(const char* path);
  * @param recursive Create recursively.
  *
  * @return Returns true on success, false otherwise.
+ *
+ * @note Returns true if directory already exists.
  */
 SN_API bool sn_dir_create(const char* path, bool recursive);
 

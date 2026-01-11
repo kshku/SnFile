@@ -135,7 +135,7 @@ bool sn_file_delete(const char* path) {
 }
 
 bool sn_dir_create(const char* path, bool recursive) {
-    if (!recursive) return mkdir(path, 0755) == 0;
+    if (!recursive) return mkdir(path, 0755) == 0 || errno == EEXIST;
 
     // Hopefully large enough buffer
     char buffer[1024] = {0};
@@ -144,7 +144,7 @@ bool sn_dir_create(const char* path, bool recursive) {
         buffer[i] = path[i];
         if (path[i] == '\\' || path[i] == '/') {
             buffer[i] = 0;
-            if (mkdir(buffer, 0755) != 0) return false;
+            if (mkdir(buffer, 0755) != 0 && errno != EEXIST) return false;
             buffer[i] = SN_PATH_SEPARATOR;
         }
     }
