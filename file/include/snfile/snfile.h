@@ -2,6 +2,28 @@
 
 #include "snfile/defines.h"
 
+#if defined(SN_FILE_STATIC)
+    #define SN_API
+#else
+    #ifdef SN_EXPORT
+        #if defined(SN_OS_LINUX) || defined(SN_OS_MAC)
+            #define SN_API __attribute__((visibility("default")))
+        #elif defined(SN_OS_WINDOWS)
+            #define SN_API __declspec(dllexport)
+        #else
+            #error "Should not reach here!"
+        #endif
+    #else
+        #if defined(SN_OS_LINUX) || defined(SN_OS_MAC)
+            #define SN_API
+        #elif defined(SN_OS_WINDOWS)
+            #define SN_API __declspec(dllimport)
+        #else
+            #error "Should not reach here!"
+        #endif
+    #endif
+#endif
+
 #if defined(SN_OS_WINDOWS)
     #define SN_PATH_SEPARATOR '\\'
 #else
@@ -323,3 +345,4 @@ SN_API bool sn_file_move(const char* src, const char* dst, bool overwrite);
  */
 SN_API bool sn_file_stat(const char* path, snFileInfo* info);
 
+#undef SN_API
