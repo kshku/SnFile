@@ -3,12 +3,10 @@ set(SRCS
 )
 
 add_executable(sn_file_test)
-
 target_sources(sn_file_test PRIVATE ${SRCS})
-
 target_link_libraries(sn_file_test PRIVATE snfile)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND SN_FILE_BUILD_SHARED)
     add_custom_target(copy_dlls ALL
         COMMENT "Copy the dlls"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_RUNTIME_DLLS:sn_file_test>" "$<TARGET_FILE_DIR:sn_file_test>"

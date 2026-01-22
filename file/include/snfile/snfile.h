@@ -26,8 +26,10 @@
 
 #if defined(SN_OS_WINDOWS)
     #define SN_PATH_SEPARATOR '\\'
+	#define SN_PATH_SEPARATOR_STR "\\"
 #else
     #define SN_PATH_SEPARATOR '/'
+	#define SN_PATH_SEPARATOR_STR "/"
 #endif
 
 /**

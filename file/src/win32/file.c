@@ -72,7 +72,7 @@ int64_t sn_file_read(snFile *file, void *buffer, uint64_t size) {
     DWORD size1 = size - size2;
 
     if (!ReadFile(HDL(file), buffer, size1, &read1, NULL)) return -1;
-    if (size2 && !ReadFile(HDL(file), buffer + size1, size2, &read2, NULL)) return -1;
+    if (size2 && !ReadFile(HDL(file), (void *)(((char *)buffer) + size1), size2, &read2, NULL)) return -1;
 
     return (int64_t)read1 + read2;
 }
@@ -85,7 +85,7 @@ int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size) {
     DWORD size1 = size - size2;
 
     if (!WriteFile(HDL(file), buffer, size1, &written1, NULL)) return -1;
-    if (size2 && !WriteFile(HDL(file), buffer + size1, size2, &written2, NULL)) return -1;
+    if (size2 && !WriteFile(HDL(file), (const void *)(((char *)buffer) + size1), size2, &written2, NULL)) return -1;
 
     return (int64_t)written1 + written2;
 }
@@ -130,7 +130,13 @@ uint64_t sn_file_size(snFile *file) {
 
 bool sn_dir_open(const char* path, snDir *dir) {
     char pattern[MAX_PATH];
-    snprintf(pattern, MAX_PATH, "%s\\*", path);
+    size_t i = 0;
+    for (i = 0; path[i] && i < SN_ARRAY_LENGTH(pattern); ++i) 
+        pattern[i] = path[i];
+    pattern[i++] = '\\';
+    pattern[i++] = '*';
+    pattern[i] = 0;
+
     DHDL(dir) = FindFirstFileA(pattern, &DDATA(dir));
     if (DHDL(dir) == INVALID_HANDLE_VALUE) return false;
 
@@ -146,9 +152,9 @@ bool sn_dir_read(snDir* dir, snDirEntry* entry) {
     else if (!FindNextFileA(DHDL(dir), data)) return false;
 
     *entry = (snDirEntry) {
-        .name = data->cFileName;
-        .is_directory = (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0;
+        .name = data->cFileName,
+        .is_directory = (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
+        .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0,
     };
     entry->is_file = !entry->is_directory;
 
@@ -222,7 +228,6 @@ bool sn_file_stat(const char* path, snFileInfo* info) {
         .size = size.QuadPart,
 
         .is_directory = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
-        .is_file = !info->is_directory,
         .is_symlink = (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0,
 
         .accessed_time = (((uint64_t)data.ftLastAccessTime.dwHighDateTime) << 32)
@@ -234,6 +239,7 @@ bool sn_file_stat(const char* path, snFileInfo* info) {
         .change_time = (((uint64_t)data.ftCreationTime.dwHighDateTime) << 32)
             | data.ftCreationTime.dwLowDateTime
     };
+    info->is_file = !info->is_directory;
 
     return true;
 }

@@ -8,6 +8,11 @@
 #include <stdint.h>
 #include <assert.h>
 
+// TODO: Temporary workaround for MSVC
+#ifdef SN_COMPILER_MSVC
+	#define max_align_t 16
+#endif
+
 #define SN_INLINE static inline
 
 #if defined(SN_COMPILER_MSVC)

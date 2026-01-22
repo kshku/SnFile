@@ -15,7 +15,7 @@ static void test_path_utils(void) {
 
     assert(sn_path_join(buffer, sizeof(buffer), "a/b", "c/d"));
     sn_path_normalize(buffer);
-    assert(strcmp(buffer, "a/b/c/d") == 0);
+    assert(strcmp(buffer, "a" SN_PATH_SEPARATOR_STR "b" SN_PATH_SEPARATOR_STR "c" SN_PATH_SEPARATOR_STR "d") == 0);
 
     assert(strcmp(sn_path_filename("/a/b/c.txt"), "c.txt") == 0);
     assert(strcmp(sn_path_extension("/a/b/c.txt"), "txt") == 0);
@@ -23,7 +23,7 @@ static void test_path_utils(void) {
 
     char p2[256] = "a/.//b/../c/d";
     sn_path_normalize(p2);
-    assert(strcmp(p2, "a//c/d") == 0);
+    assert(strcmp(p2, "a" SN_PATH_SEPARATOR_STR SN_PATH_SEPARATOR_STR "c" SN_PATH_SEPARATOR_STR "d") == 0);
 
     printf("[OK] path utils\n");
 }
