@@ -1,14 +1,14 @@
 #include "snfile/snfile.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
-#define TEST_DIR        "snfile_test_dir"
-#define TEST_SUBDIR     "snfile_test_dir/sub"
-#define TEST_FILE       "snfile_test_dir/test.txt"
-#define TEST_FILE_COPY  "snfile_test_dir/test_copy.txt"
-#define TEST_FILE_MOVE  "snfile_test_dir/test_moved.txt"
+#define TEST_DIR "snfile_test_dir"
+#define TEST_SUBDIR "snfile_test_dir/sub"
+#define TEST_FILE "snfile_test_dir/test.txt"
+#define TEST_FILE_COPY "snfile_test_dir/test_copy.txt"
+#define TEST_FILE_MOVE "snfile_test_dir/test_moved.txt"
 
 static void test_path_utils(void) {
     char buffer[256];
@@ -59,12 +59,7 @@ static void test_file_io(void) {
 
     snFile file;
     assert(sn_file_open(
-        TEST_FILE,
-        SN_FILE_OPEN_FLAG_CREATE |
-        SN_FILE_OPEN_FLAG_WRITE |
-        SN_FILE_OPEN_FLAG_TRUNCATE,
-        &file
-    ));
+        TEST_FILE, SN_FILE_OPEN_FLAG_CREATE | SN_FILE_OPEN_FLAG_WRITE | SN_FILE_OPEN_FLAG_TRUNCATE, &file));
 
     assert(sn_file_write(&file, msg, strlen(msg)) == (int64_t)strlen(msg));
     assert(sn_file_flush(&file));

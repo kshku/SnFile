@@ -2,15 +2,15 @@
 
 #include "snfile/platform.h"
 
+#include <assert.h>
 #include <stdalign.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <assert.h>
 
 // TODO: Temporary workaround for MSVC
 #ifdef SN_COMPILER_MSVC
-	#define max_align_t 16
+    #define max_align_t 16
 #endif
 
 #define SN_INLINE static inline

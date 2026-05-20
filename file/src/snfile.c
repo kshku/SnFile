@@ -29,7 +29,7 @@ bool sn_path_join(char *dst, size_t dst_size, const char *a, const char *b) {
     return true;
 }
 
-void sn_path_normalize(char* path) {
+void sn_path_normalize(char *path) {
     char *last_sep = path;
     char *last2_sep = path;
     size_t dots;
@@ -68,7 +68,7 @@ void sn_path_normalize(char* path) {
     *write = 0;
 }
 
-const char* sn_path_filename(const char* path) {
+const char *sn_path_filename(const char *path) {
     const char *last = path;
     for (const char *p = path; *p; ++p)
         if (*p == '\\' || *p == '/') last = p + 1;
@@ -76,7 +76,7 @@ const char* sn_path_filename(const char* path) {
     return last;
 }
 
-const char* sn_path_extension(const char* path) {
+const char *sn_path_extension(const char *path) {
     const char *name = sn_path_filename(path);
     const char *dot = NULL;
 
