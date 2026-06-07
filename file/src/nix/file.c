@@ -44,7 +44,8 @@ bool sn_file_open(const char *path, int flags, snFile *file) {
 }
 
 void sn_file_close(snFile *file) {
-    SN_ASSERT(close(FD(file)) == 0);
+    int res = close(FD(file));
+    SN_ASSERT(res == 0);
     FD(file) = -1;
 }
 
@@ -108,7 +109,8 @@ bool sn_dir_read(snDir *dir, snDirEntry *entry) {
 }
 
 void sn_dir_close(snDir *dir) {
-    SN_ASSERT(closedir(DIRECTORY(dir)) == 0);
+    int res = closedir(DIRECTORY(dir));
+    SN_ASSERT(res == 0);
 }
 
 bool sn_path_exists(const char *path) {
