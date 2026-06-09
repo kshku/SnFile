@@ -12,51 +12,51 @@
 #endif
 
 /**
- * @struct snFile
+ * @struct SnFile
  * @brief Opaque file handle.
  */
-typedef struct snFile {
+typedef struct SnFile {
     alignas(max_align_t) char buffer[8];
-} snFile;
+} SnFile;
 
 /**
- * @struct snDir
+ * @struct SnDir
  * @brief Opaque dir handle.
  */
-typedef struct snDir {
+typedef struct SnDir {
 #ifdef SN_OS_WINDOWS
     alignas(max_align_t) char buffer[512];
 #else
     alignas(max_align_t) char buffer[8];
 #endif
-} snDir;
+} SnDir;
 
 /**
  * @brief File open flags.
  */
-typedef enum snFileOpenFlag {
+typedef enum SnFileOpenFlag {
     SN_FILE_OPEN_FLAG_READ = SN_BIT_FLAG(0),
     SN_FILE_OPEN_FLAG_WRITE = SN_BIT_FLAG(1),
     SN_FILE_OPEN_FLAG_APPEND = SN_BIT_FLAG(2),
     SN_FILE_OPEN_FLAG_CREATE = SN_BIT_FLAG(3),
     SN_FILE_OPEN_FLAG_TRUNCATE = SN_BIT_FLAG(4),
     SN_FILE_OPEN_FLAG_BINARY = SN_BIT_FLAG(5), /**< Windows only, ignored in POSIX */
-} snFileOpenFlag;
+} SnFileOpenFlag;
 
 /**
  * @brief File seeks.
  */
-typedef enum snFileSeekOrigin {
+typedef enum SnFileSeekOrigin {
     SN_FILE_SEEK_ORIGIN_BEGIN,
     SN_FILE_SEEK_ORIGIN_CURRENT,
     SN_FILE_SEEK_ORIGIN_END
-} snFileSeekOrigin;
+} SnFileSeekOrigin;
 
 /**
- * @struct snFileInfo
+ * @struct SnFileInfo
  * @brief File info.
  */
-typedef struct snFileInfo {
+typedef struct SnFileInfo {
     uint64_t size;
     uint64_t change_time;
     uint64_t modified_time;
@@ -65,18 +65,18 @@ typedef struct snFileInfo {
     bool is_file;
     bool is_directory;
     bool is_symlink;
-} snFileInfo;
+} SnFileInfo;
 
 /**
- * @struct snDirEntry
+ * @struct SnDirEntry
  * @brief The directory entry.
  */
-typedef struct snDirEntry {
+typedef struct SnDirEntry {
     const char *name;
     bool is_file;
     bool is_directory;
     bool is_symlink;
-} snDirEntry;
+} SnDirEntry;
 
 /**
  * @brief Open a file.
@@ -87,14 +87,14 @@ typedef struct snDirEntry {
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_open(const char *path, int flags, snFile *file);
+SN_API bool sn_file_open(const char *path, int flags, SnFile *file);
 
 /**
  * @brief Closes the opened file.
  *
  * @param file File to close.
  */
-SN_API void sn_file_close(snFile *file);
+SN_API void sn_file_close(SnFile *file);
 
 /**
  * @bief Read from file to buffer.
@@ -109,7 +109,7 @@ SN_API void sn_file_close(snFile *file);
  *
  * @note Returns number of bytes read.
  */
-SN_API int64_t sn_file_read(snFile *file, void *buffer, uint64_t size);
+SN_API int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size);
 
 /**
  * @bief Write to file from buffer.
@@ -124,7 +124,7 @@ SN_API int64_t sn_file_read(snFile *file, void *buffer, uint64_t size);
  *
  * @note Returns number of bytes written.
  */
-SN_API int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size);
+SN_API int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size);
 
 /**
  * @brief Seek file.
@@ -133,7 +133,7 @@ SN_API int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size);
  * @param offset Offset to seek.
  * @param origin The seek origin.
  */
-SN_API bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin);
+SN_API bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin);
 
 /**
  * @brief Get the current offset.
@@ -142,7 +142,7 @@ SN_API bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin);
  *
  * @return Returns current offset.
  */
-SN_API uint64_t sn_file_tell(snFile *file);
+SN_API uint64_t sn_file_tell(SnFile *file);
 
 /**
  * @brief Flush the file.
@@ -151,7 +151,7 @@ SN_API uint64_t sn_file_tell(snFile *file);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_flush(snFile *file);
+SN_API bool sn_file_flush(SnFile *file);
 
 /**
  * @brief Get file size.
@@ -160,7 +160,7 @@ SN_API bool sn_file_flush(snFile *file);
  *
  * @return Size of the file.
  */
-SN_API uint64_t sn_file_size(snFile *file);
+SN_API uint64_t sn_file_size(SnFile *file);
 
 /**
  * @brief Open a directory.
@@ -170,7 +170,7 @@ SN_API uint64_t sn_file_size(snFile *file);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_dir_open(const char *path, snDir *dir);
+SN_API bool sn_dir_open(const char *path, SnDir *dir);
 
 /**
  * @brief Read the directory.
@@ -182,14 +182,14 @@ SN_API bool sn_dir_open(const char *path, snDir *dir);
  *
  * @return Returns false when no more entries are there.
  */
-SN_API bool sn_dir_read(snDir *dir, snDirEntry *entry);
+SN_API bool sn_dir_read(SnDir *dir, SnDirEntry *entry);
 
 /**
  * @brief Close the opened directory.
  *
  * @param dir The directory to close.
  */
-SN_API void sn_dir_close(snDir *dir);
+SN_API void sn_dir_close(SnDir *dir);
 
 /**
  * @brief Join two paths.
@@ -324,6 +324,6 @@ SN_API bool sn_file_move(const char *src, const char *dst, bool overwrite);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_stat(const char *path, snFileInfo *info);
+SN_API bool sn_file_stat(const char *path, SnFileInfo *info);
 
 #undef SN_API

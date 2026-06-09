@@ -5,24 +5,24 @@
     #include <string.h>
     #include <windows.h>
 
-typedef struct snFileWin32 {
+typedef struct SnFileWin32 {
     HANDLE handle;
-} snFileWin32;
+} SnFileWin32;
 
-    #define HDL(file) (((snFileWin32 *)(file))->handle)
+    #define HDL(file) (((SnFileWin32 *)(file))->handle)
 
-typedef struct snDirWin32 {
+typedef struct SnDirWin32 {
     HANDLE handle;
     WIN32_FIND_DATAA data;
     bool first;
-} snDirWin32;
+} SnDirWin32;
 
-    #define DHDL(dir) (((snDirWin32 *)(dir))->handle)
-    #define DDATA(dir) (((snDirWin32 *)(dir))->data)
-    #define DFIRST(dir) (((snDirWin32 *)(dir))->first)
+    #define DHDL(dir) (((SnDirWin32 *)(dir))->handle)
+    #define DDATA(dir) (((SnDirWin32 *)(dir))->data)
+    #define DFIRST(dir) (((SnDirWin32 *)(dir))->first)
 
-SN_STATIC_ASSERT(sizeof(snFileWin32) <= sizeof(snFile), "snFile size is not large enough!");
-SN_STATIC_ASSERT(sizeof(snDirWin32) <= sizeof(snDir), "snDir size is not large enough!");
+SN_STATIC_ASSERT(sizeof(SnFileWin32) <= sizeof(SnFile), "SnFile size is not large enough!");
+SN_STATIC_ASSERT(sizeof(SnDirWin32) <= sizeof(SnDir), "SnDir size is not large enough!");
 
 static DWORD file_access(int flags) {
     DWORD access = 0;
@@ -42,7 +42,7 @@ static DWORD file_creation(int flags) {
     return OPEN_EXISTING;
 }
 
-bool sn_file_open(const char *path, snFileOpenFlag flags, snFile *file) {
+bool sn_file_open(const char *path, SnFileOpenFlag flags, SnFile *file) {
     HDL(file) = CreateFileA(path, file_access(flags), FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                             file_creation(flags), FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -56,14 +56,14 @@ bool sn_file_open(const char *path, snFileOpenFlag flags, snFile *file) {
     return true;
 }
 
-void sn_file_close(snFile *file) {
+void sn_file_close(SnFile *file) {
     if (HDL(file) && HDL(file) != INVALID_HANDLE_VALUE) {
         CloseHandle(HDL(file));
         HDL(file) = INVALID_HANDLE_VALUE;
     }
 }
 
-int64_t sn_file_read(snFile *file, void *buffer, uint64_t size) {
+int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size) {
     DWORD read1 = 0;
     DWORD read2 = 0;
     DWORD size2 = 0;
@@ -77,7 +77,7 @@ int64_t sn_file_read(snFile *file, void *buffer, uint64_t size) {
     return (int64_t)read1 + read2;
 }
 
-int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size) {
+int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size) {
     DWORD written1 = 0;
     DWORD written2 = 0;
     DWORD size2 = 0;
@@ -91,7 +91,7 @@ int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size) {
     return (int64_t)written1 + written2;
 }
 
-bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin) {
+bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin) {
     DWORD move = 0;
     switch (origin) {
         case SN_FILE_SEEK_ORIGIN_BEGIN:
@@ -112,24 +112,24 @@ bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin) {
     return SetFilePointerEx(HDL(file), off, NULL, move);
 }
 
-uint64_t sn_file_tell(snFile *file) {
+uint64_t sn_file_tell(SnFile *file) {
     LARGE_INTEGER zero = {0};
     LARGE_INTEGER pos;
     SetFilePointerEx(HDL(file), zero, &pos, FILE_CURRENT);
     return (uint64_t)pos.QuadPart;
 }
 
-bool sn_file_flush(snFile *file) {
+bool sn_file_flush(SnFile *file) {
     return FlushFileBuffers(HDL(file));
 }
 
-uint64_t sn_file_size(snFile *file) {
+uint64_t sn_file_size(SnFile *file) {
     LARGE_INTEGER size;
     if (!GetFileSizeEx(HDL(file), &size)) return 0;
     return (uint64_t)size.QuadPart;
 }
 
-bool sn_dir_open(const char *path, snDir *dir) {
+bool sn_dir_open(const char *path, SnDir *dir) {
     char pattern[MAX_PATH];
     size_t i = 0;
     for (i = 0; path[i] && i < SN_ARRAY_LENGTH(pattern); ++i) pattern[i] = path[i];
@@ -145,13 +145,13 @@ bool sn_dir_open(const char *path, snDir *dir) {
     return true;
 }
 
-bool sn_dir_read(snDir *dir, snDirEntry *entry) {
+bool sn_dir_read(SnDir *dir, SnDirEntry *entry) {
     WIN32_FIND_DATAA *data = &DDATA(dir);
 
     if (DFIRST(dir)) DFIRST(dir) = false;
     else if (!FindNextFileA(DHDL(dir), data)) return false;
 
-    *entry = (snDirEntry){
+    *entry = (SnDirEntry){
         .name = data->cFileName,
         .is_directory = (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
         .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0,
@@ -161,7 +161,7 @@ bool sn_dir_read(snDir *dir, snDirEntry *entry) {
     return true;
 }
 
-void sn_dir_close(snDir *dir) {
+void sn_dir_close(SnDir *dir) {
     if (DHDL(dir) && DHDL(dir) != INVALID_HANDLE_VALUE) {
         FindClose(DHDL(dir));
         DHDL(dir) = INVALID_HANDLE_VALUE;
@@ -216,7 +216,7 @@ bool sn_file_move(const char *src, const char *dst, bool overwrite) {
     return MoveFileExA(src, dst, (overwrite ? MOVEFILE_REPLACE_EXISTING : 0));
 }
 
-bool sn_file_stat(const char *path, snFileInfo *info) {
+bool sn_file_stat(const char *path, SnFileInfo *info) {
     WIN32_FILE_ATTRIBUTE_DATA data;
     if (!GetFileAttributesExA(path, GetFileExInfoStandard, &data)) return false;
 
@@ -224,7 +224,7 @@ bool sn_file_stat(const char *path, snFileInfo *info) {
     size.HighPart = data.nFileSizeHigh;
     size.LowPart = data.nFileSizeLow;
 
-    *info = (snFileInfo){
+    *info = (SnFileInfo){
         .size = size.QuadPart,
 
         .is_directory = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,

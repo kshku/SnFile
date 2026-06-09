@@ -10,22 +10,22 @@
     #include <sys/stat.h>
     #include <unistd.h>
 
-typedef struct snFilePosix {
+typedef struct SnFilePosix {
     int fd;
-} snFilePosix;
+} SnFilePosix;
 
-    #define FD(file) (((snFilePosix *)(file))->fd)
+    #define FD(file) (((SnFilePosix *)(file))->fd)
 
-typedef struct snDirPosix {
+typedef struct SnDirPosix {
     DIR *dir;
-} snDirPosix;
+} SnDirPosix;
 
-    #define DIRECTORY(dir) (((snDirPosix *)(dir))->dir)
+    #define DIRECTORY(dir) (((SnDirPosix *)(dir))->dir)
 
-SN_STATIC_ASSERT(sizeof(snFilePosix) <= sizeof(snFile), "snFile size is not large enough!");
-SN_STATIC_ASSERT(sizeof(snDirPosix) <= sizeof(snDir), "snDir size is not large enough!");
+SN_STATIC_ASSERT(sizeof(SnFilePosix) <= sizeof(SnFile), "SnFile size is not large enough!");
+SN_STATIC_ASSERT(sizeof(SnDirPosix) <= sizeof(SnDir), "SnDir size is not large enough!");
 
-bool sn_file_open(const char *path, int flags, snFile *file) {
+bool sn_file_open(const char *path, int flags, SnFile *file) {
     int open_flags = 0;
 
     if (flags & SN_FILE_OPEN_FLAG_READ) open_flags |= O_RDONLY;
@@ -43,21 +43,21 @@ bool sn_file_open(const char *path, int flags, snFile *file) {
     return true;
 }
 
-void sn_file_close(snFile *file) {
+void sn_file_close(SnFile *file) {
     int res = close(FD(file));
     SN_ASSERT(res == 0);
     FD(file) = -1;
 }
 
-int64_t sn_file_read(snFile *file, void *buffer, uint64_t size) {
+int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size) {
     return (int64_t)read(FD(file), buffer, size);
 }
 
-int64_t sn_file_write(snFile *file, const void *buffer, uint64_t size) {
+int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size) {
     return (int64_t)write(FD(file), buffer, size);
 }
 
-bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin) {
+bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin) {
     int whence = 0;
     switch (origin) {
         case SN_FILE_SEEK_ORIGIN_BEGIN:
@@ -75,32 +75,32 @@ bool sn_file_seek(snFile *file, int64_t offset, snFileSeekOrigin origin) {
     return lseek(FD(file), offset, whence) >= 0;
 }
 
-uint64_t sn_file_tell(snFile *file) {
+uint64_t sn_file_tell(SnFile *file) {
     return (uint64_t)lseek(FD(file), 0, SEEK_CUR);
 }
 
-bool sn_file_flush(snFile *file) {
+bool sn_file_flush(SnFile *file) {
     return fsync(FD(file)) == 0;
 }
 
-uint64_t sn_file_size(snFile *file) {
+uint64_t sn_file_size(SnFile *file) {
     struct stat st;
     if (fstat(FD(file), &st) != 0) return 0;
     return st.st_size;
 }
 
-bool sn_dir_open(const char *path, snDir *dir) {
+bool sn_dir_open(const char *path, SnDir *dir) {
     DIRECTORY(dir) = opendir(path);
     if (!DIRECTORY(dir)) return false;
     return true;
 }
 
-bool sn_dir_read(snDir *dir, snDirEntry *entry) {
+bool sn_dir_read(SnDir *dir, SnDirEntry *entry) {
     struct dirent *dirent = readdir(DIRECTORY(dir));
 
     if (!dirent) return false;
 
-    *entry = (snDirEntry){.name = dirent->d_name,
+    *entry = (SnDirEntry){.name = dirent->d_name,
                           .is_file = dirent->d_type == DT_REG,
                           .is_directory = dirent->d_type == DT_DIR,
                           .is_symlink = dirent->d_type == DT_LNK};
@@ -108,7 +108,7 @@ bool sn_dir_read(snDir *dir, snDirEntry *entry) {
     return true;
 }
 
-void sn_dir_close(snDir *dir) {
+void sn_dir_close(SnDir *dir) {
     int res = closedir(DIRECTORY(dir));
     SN_ASSERT(res == 0);
 }
@@ -158,7 +158,7 @@ bool sn_dir_delete(const char *path) {
 bool sn_file_copy(const char *src, const char *dst, bool overwrite) {
     if (!overwrite && sn_path_exists(dst)) return false;
 
-    snFile srcf, dstf;
+    SnFile srcf, dstf;
 
     if (!sn_file_open(src, SN_FILE_OPEN_FLAG_READ, &srcf)) return false;
 
@@ -180,11 +180,11 @@ bool sn_file_move(const char *src, const char *dst, bool overwrite) {
     return rename(src, dst) == 0;
 }
 
-bool sn_file_stat(const char *path, snFileInfo *info) {
+bool sn_file_stat(const char *path, SnFileInfo *info) {
     struct stat st;
     if (stat(path, &st) != 0) return false;
 
-    *info = (snFileInfo){
+    *info = (SnFileInfo){
         .size = st.st_size,
 
         .modified_time = st.st_mtime,

@@ -38,10 +38,10 @@ static void test_directory_ops(void) {
     TEST_ASSERT(sn_path_is_directory(TEST_DIR));
     TEST_ASSERT(sn_path_is_directory(TEST_SUBDIR));
 
-    snDir dir;
+    SnDir dir;
     TEST_ASSERT(sn_dir_open(TEST_DIR, &dir));
 
-    snDirEntry entry;
+    SnDirEntry entry;
     int seen = 0;
     while (sn_dir_read(&dir, &entry)) {
         if (strcmp(entry.name, ".") == 0) continue;
@@ -59,7 +59,7 @@ static void test_file_io(void) {
     const char *msg = "Hello from SnFile!\n";
     char buffer[128];
 
-    snFile file;
+    SnFile file;
     TEST_ASSERT(sn_file_open(
         TEST_FILE, SN_FILE_OPEN_FLAG_CREATE | SN_FILE_OPEN_FLAG_WRITE | SN_FILE_OPEN_FLAG_TRUNCATE, &file));
 
@@ -78,7 +78,7 @@ static void test_file_io(void) {
 }
 
 static void test_seek_and_size(void) {
-    snFile file;
+    SnFile file;
     TEST_ASSERT(sn_file_open(TEST_FILE, SN_FILE_OPEN_FLAG_READ, &file));
 
     uint64_t size = sn_file_size(&file);
@@ -96,7 +96,7 @@ static void test_seek_and_size(void) {
 }
 
 static void test_copy_move_stat(void) {
-    snFileInfo info;
+    SnFileInfo info;
 
     TEST_ASSERT(sn_file_copy(TEST_FILE, TEST_FILE_COPY, true));
     TEST_ASSERT(sn_path_exists(TEST_FILE_COPY));
