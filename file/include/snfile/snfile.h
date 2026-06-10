@@ -16,7 +16,7 @@
  * @brief Opaque file handle.
  */
 typedef struct SnFile {
-    alignas(max_align_t) char buffer[8];
+    alignas(16) char buffer[8];
 } SnFile;
 
 /**
@@ -25,9 +25,9 @@ typedef struct SnFile {
  */
 typedef struct SnDir {
 #ifdef SN_OS_WINDOWS
-    alignas(max_align_t) char buffer[512];
+    alignas(16) char buffer[512];
 #else
-    alignas(max_align_t) char buffer[8];
+    alignas(16) char buffer[8];
 #endif
 } SnDir;
 
