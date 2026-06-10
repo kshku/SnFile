@@ -1,7 +1,7 @@
 #pragma once
 
 #include "snfile/api.h"
-#include "snfile/defines.h"
+#include <sncore/defines.h>
 
 #if defined(SN_OS_WINDOWS)
     #define SN_PATH_SEPARATOR '\\'
@@ -87,14 +87,14 @@ typedef struct SnDirEntry {
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_open(const char *path, int flags, SnFile *file);
+SN_FILE_API bool sn_file_open(const char *path, int flags, SnFile *file);
 
 /**
  * @brief Closes the opened file.
  *
  * @param file File to close.
  */
-SN_API void sn_file_close(SnFile *file);
+SN_FILE_API void sn_file_close(SnFile *file);
 
 /**
  * @bief Read from file to buffer.
@@ -109,7 +109,7 @@ SN_API void sn_file_close(SnFile *file);
  *
  * @note Returns number of bytes read.
  */
-SN_API int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size);
+SN_FILE_API int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size);
 
 /**
  * @bief Write to file from buffer.
@@ -124,7 +124,7 @@ SN_API int64_t sn_file_read(SnFile *file, void *buffer, uint64_t size);
  *
  * @note Returns number of bytes written.
  */
-SN_API int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size);
+SN_FILE_API int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size);
 
 /**
  * @brief Seek file.
@@ -133,7 +133,7 @@ SN_API int64_t sn_file_write(SnFile *file, const void *buffer, uint64_t size);
  * @param offset Offset to seek.
  * @param origin The seek origin.
  */
-SN_API bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin);
+SN_FILE_API bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin);
 
 /**
  * @brief Get the current offset.
@@ -142,7 +142,7 @@ SN_API bool sn_file_seek(SnFile *file, int64_t offset, SnFileSeekOrigin origin);
  *
  * @return Returns current offset.
  */
-SN_API uint64_t sn_file_tell(SnFile *file);
+SN_FILE_API uint64_t sn_file_tell(SnFile *file);
 
 /**
  * @brief Flush the file.
@@ -151,7 +151,7 @@ SN_API uint64_t sn_file_tell(SnFile *file);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_flush(SnFile *file);
+SN_FILE_API bool sn_file_flush(SnFile *file);
 
 /**
  * @brief Get file size.
@@ -160,7 +160,7 @@ SN_API bool sn_file_flush(SnFile *file);
  *
  * @return Size of the file.
  */
-SN_API uint64_t sn_file_size(SnFile *file);
+SN_FILE_API uint64_t sn_file_size(SnFile *file);
 
 /**
  * @brief Open a directory.
@@ -170,7 +170,7 @@ SN_API uint64_t sn_file_size(SnFile *file);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_dir_open(const char *path, SnDir *dir);
+SN_FILE_API bool sn_dir_open(const char *path, SnDir *dir);
 
 /**
  * @brief Read the directory.
@@ -182,14 +182,14 @@ SN_API bool sn_dir_open(const char *path, SnDir *dir);
  *
  * @return Returns false when no more entries are there.
  */
-SN_API bool sn_dir_read(SnDir *dir, SnDirEntry *entry);
+SN_FILE_API bool sn_dir_read(SnDir *dir, SnDirEntry *entry);
 
 /**
  * @brief Close the opened directory.
  *
  * @param dir The directory to close.
  */
-SN_API void sn_dir_close(SnDir *dir);
+SN_FILE_API void sn_dir_close(SnDir *dir);
 
 /**
  * @brief Join two paths.
@@ -201,7 +201,7 @@ SN_API void sn_dir_close(SnDir *dir);
  *
  * @return Returns true on success, false if size was not enough.
  */
-SN_API bool sn_path_join(char *dst, size_t dst_size, const char *a, const char *b);
+SN_FILE_API bool sn_path_join(char *dst, size_t dst_size, const char *a, const char *b);
 
 /**
  * @brief Normalize the path.
@@ -213,7 +213,7 @@ SN_API bool sn_path_join(char *dst, size_t dst_size, const char *a, const char *
  *
  * @param path Pointer to path buffer.
  */
-SN_API void sn_path_normalize(char *path);
+SN_FILE_API void sn_path_normalize(char *path);
 
 /**
  * @brief Get the pointer to file name.
@@ -224,7 +224,7 @@ SN_API void sn_path_normalize(char *path);
  *
  * @param Pointer to file name in the buffer.
  */
-SN_API const char *sn_path_filename(const char *path);
+SN_FILE_API const char *sn_path_filename(const char *path);
 
 /**
  * @brief Get the pointer to file extension.
@@ -235,7 +235,7 @@ SN_API const char *sn_path_filename(const char *path);
  *
  * @param Pointer to file extension in the buffer.
  */
-SN_API const char *sn_path_extension(const char *path);
+SN_FILE_API const char *sn_path_extension(const char *path);
 
 /**
  * @brief Check whether path exists.
@@ -244,7 +244,7 @@ SN_API const char *sn_path_extension(const char *path);
  *
  * @return Returns true if path exists, false otherwise.
  */
-SN_API bool sn_path_exists(const char *path);
+SN_FILE_API bool sn_path_exists(const char *path);
 
 /**
  * @brief Check whether path is a file.
@@ -253,7 +253,7 @@ SN_API bool sn_path_exists(const char *path);
  *
  * @return Returns true if path is a file, false otherwise.
  */
-SN_API bool sn_path_is_file(const char *path);
+SN_FILE_API bool sn_path_is_file(const char *path);
 
 /**
  * @brief Check whether path is a directory.
@@ -262,7 +262,7 @@ SN_API bool sn_path_is_file(const char *path);
  *
  * @return Returns true if path is a directory, false otherwise.
  */
-SN_API bool sn_path_is_directory(const char *path);
+SN_FILE_API bool sn_path_is_directory(const char *path);
 
 /**
  * @brief Delete a file.
@@ -271,7 +271,7 @@ SN_API bool sn_path_is_directory(const char *path);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_delete(const char *path);
+SN_FILE_API bool sn_file_delete(const char *path);
 
 /**
  * @brief Create a directory.
@@ -283,7 +283,7 @@ SN_API bool sn_file_delete(const char *path);
  *
  * @note Returns true if directory already exists.
  */
-SN_API bool sn_dir_create(const char *path, bool recursive);
+SN_FILE_API bool sn_dir_create(const char *path, bool recursive);
 
 /**
  * @brief Delete an empty directory.
@@ -292,7 +292,7 @@ SN_API bool sn_dir_create(const char *path, bool recursive);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_dir_delete(const char *path);
+SN_FILE_API bool sn_dir_delete(const char *path);
 
 /**
  * @brief Copy file.
@@ -303,7 +303,7 @@ SN_API bool sn_dir_delete(const char *path);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_copy(const char *src, const char *dst, bool overwrite);
+SN_FILE_API bool sn_file_copy(const char *src, const char *dst, bool overwrite);
 
 /**
  * @brief Move file.
@@ -314,7 +314,7 @@ SN_API bool sn_file_copy(const char *src, const char *dst, bool overwrite);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_move(const char *src, const char *dst, bool overwrite);
+SN_FILE_API bool sn_file_move(const char *src, const char *dst, bool overwrite);
 
 /**
  * @brief Get file info.
@@ -324,6 +324,5 @@ SN_API bool sn_file_move(const char *src, const char *dst, bool overwrite);
  *
  * @return Returns true on success, false otherwise.
  */
-SN_API bool sn_file_stat(const char *path, SnFileInfo *info);
+SN_FILE_API bool sn_file_stat(const char *path, SnFileInfo *info);
 
-#undef SN_API

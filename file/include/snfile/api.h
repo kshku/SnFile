@@ -1,24 +1,11 @@
 #pragma once
 
-#if defined(SN_FILE_STATIC)
-    #define SN_API
-#else
-    #ifdef SN_EXPORT
-        #if defined(SN_OS_LINUX) || defined(SN_OS_MAC)
-            #define SN_API __attribute__((visibility("default")))
-        #elif defined(SN_OS_WINDOWS)
-            #define SN_API __declspec(dllexport)
-        #else
-            #error "Should not reach here!"
-        #endif
-    #else
-        #if defined(SN_OS_LINUX) || defined(SN_OS_MAC)
-            #define SN_API
-        #elif defined(SN_OS_WINDOWS)
-            #define SN_API __declspec(dllimport)
-        #else
-            #error "Should not reach here!"
-        #endif
-    #endif
-#endif
+#include <sncore/api_common.h>
 
+#if defined(SN_FILE_STATIC)
+    #define SN_FILE_API
+#elif defined(SN_EXPORT)
+    #define SN_FILE_API SN_API_HELPER_EXPORT
+#else
+    #define SN_FILE_API SN_API_HELPER_IMPORT
+#endif
