@@ -2,9 +2,12 @@
 
 File I/O abstraction library written in C.
 
+Provides cross-platform file and directory operations, path utilities,
+and filesystem queries.
+
 ## API
 
-### File API 
+### File API
 - Open / close files
 - Read / write files
 - Seek / tell
@@ -16,10 +19,10 @@ File I/O abstraction library written in C.
 - Read the entries
 
 ### Path utilities
-#### Pure string-based path helpers:
+
+#### String-based path helpers
 - Join path
-- Normalize (resolves `.` and `..` lexically, converts `\` and `/` to `SN_PATH_SEPARATOR`
-    which is defined based on platform)
+- Normalize (resolves `.` and `..` lexically, converts `\` and `/` to `SN_PATH_SEPARATOR`)
 - File name and extension
 
 #### Filesystem queries
@@ -27,18 +30,83 @@ File I/O abstraction library written in C.
 - Path is file
 - Path is directory
 
-#### File system Modification
+#### Filesystem modification
 - Create directory
 - Delete file / directory
 - Copy file
 - Move file
 
 #### File information
-`sn_file_stat(const char *path, snFileInfo *info);`
-Provides
+```c
+sn_file_stat(const char *path, snFileInfo *info);
+```
+Provides:
 - File size
 - Access / modification / change times
 - File type (file, directory, or symlink)
 
-NOTE: No thread-safety guarantees are provided
+> **Note:** No thread-safety guarantees are provided.
 
+## Usage
+
+```c
+#include <snfile/snfile.h>
+#include <stdio.h>
+
+int main(void) {
+    // Write to a file
+    snFile file;
+    if (sn_file_open(&file, "hello.txt", SN_FILE_MODE_WRITE)) {
+        sn_file_write(&file, "Hello, SnFile!", 14);
+        sn_file_close(&file);
+    }
+
+    // Read from a file
+    char buf[64];
+    if (sn_file_open(&file, "hello.txt", SN_FILE_MODE_READ)) {
+        uint64_t bytes = sn_file_read(&file, buf, sizeof(buf) - 1);
+        buf[bytes] = '\0';
+        printf("Read: %s\n", buf);
+        sn_file_close(&file);
+    }
+
+    // Path joining
+    char joined[256];
+    sn_path_join(joined, sizeof(joined), "/base", "sub", "file.txt", NULL);
+    printf("Joined: %s\n", joined);
+
+    return 0;
+}
+```
+
+## Adding to your project
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(snfile
+    GIT_REPOSITORY https://github.com/kshku/SnFile.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(snfile)
+
+target_link_libraries(myapp PRIVATE snfile)
+```
+
+## Build
+
+```sh
+cmake -B build
+cmake --build build
+```
+
+## Platform Support
+
+| Platform | Backend |
+|----------|---------|
+| Linux | POSIX (`open`, `read`, `write`, `opendir`, etc.) |
+| macOS | POSIX |
+| Windows | Win32 (`CreateFileA`, `ReadFile`, `FindFirstFileA`, etc.) |
+
+## Dependencies
+
+- **SnCore** — fetched automatically via FetchContent
