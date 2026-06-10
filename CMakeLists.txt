@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.15...3.31)
 
 project(SnFile VERSION 0.0.0 DESCRIPTION "A File system abstraction library" LANGUAGES C)
 
+include(FetchContent)
+FetchContent_Declare(sncore
+    GIT_REPOSITORY https://github.com/kshku/SnCore.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(sncore)
+
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 17)

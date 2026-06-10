@@ -1,7 +1,7 @@
 #pragma once
 
 #include "snfile/api.h"
-#include "snfile/defines.h"
+#include <sncore/defines.h>
 
 #if defined(SN_OS_WINDOWS)
     #define SN_PATH_SEPARATOR '\\'
