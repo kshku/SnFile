@@ -1,5 +1,5 @@
-#pragma once
 #include <sncore/api_common.h>
+
 #if defined(SN_FILE_STATIC)
     #define SN_API
 #elif defined(SN_EXPORT)
