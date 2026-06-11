@@ -1,6 +1,7 @@
 #pragma once
 
 #include "snfile/api.h"
+
 #include <sncore/defines.h>
 
 #if defined(SN_OS_WINDOWS)

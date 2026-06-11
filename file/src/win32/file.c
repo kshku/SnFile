@@ -2,9 +2,9 @@
 
 #if defined(SN_OS_WINDOWS)
 
+    #include <sncore/utf.h>
     #include <string.h>
     #include <windows.h>
-    #include <sncore/utf.h>
 
 typedef struct SnFileWin32 {
     HANDLE handle;
@@ -158,8 +158,7 @@ bool sn_dir_read(SnDir *dir, SnDirEntry *entry) {
     if (DFIRST(dir)) DFIRST(dir) = false;
     else if (!FindNextFileW(DHDL(dir), data)) return false;
 
-    if (sn_utf16_to_utf8(data->cFileName, DCURR_NAME(dir), 260 * 4) == (size_t)-1)
-        return false;
+    if (sn_utf16_to_utf8(data->cFileName, DCURR_NAME(dir), 260 * 4) == (size_t)-1) return false;
 
     *entry = (SnDirEntry){
         .name = DCURR_NAME(dir),

@@ -4,7 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TEST_ASSERT(x) do { if (!(x)) { fprintf(stderr, "FAIL [%s:%d]: %s\n", __FILE__, __LINE__, #x); abort(); } } while(0)
+#define TEST_ASSERT(x)                                                     \
+    do {                                                                   \
+        if (!(x)) {                                                        \
+            fprintf(stderr, "FAIL [%s:%d]: %s\n", __FILE__, __LINE__, #x); \
+            abort();                                                       \
+        }                                                                  \
+    } while (0)
 
 #define TEST_DIR "snfile_test_dir"
 #define TEST_SUBDIR "snfile_test_dir/sub"
