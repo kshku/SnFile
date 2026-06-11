@@ -85,7 +85,7 @@ int main(void) {
 include(FetchContent)
 FetchContent_Declare(snfile
     GIT_REPOSITORY https://github.com/kshku/SnFile.git
-    GIT_TAG main
+    GIT_TAG <tag>  # e.g., v0.1.0
 )
 FetchContent_MakeAvailable(snfile)
 
