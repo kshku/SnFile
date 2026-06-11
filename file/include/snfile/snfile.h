@@ -25,7 +25,7 @@ typedef struct SnFile {
  */
 typedef struct SnDir {
 #ifdef SN_OS_WINDOWS
-    alignas(16) char buffer[512];
+    alignas(16) char buffer[2048];
 #else
     alignas(16) char buffer[8];
 #endif
