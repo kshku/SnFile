@@ -4,6 +4,7 @@
 
     #include <string.h>
     #include <windows.h>
+    #include <sncore/utf.h>
 
 typedef struct SnFileWin32 {
     HANDLE handle;
@@ -13,13 +14,15 @@ typedef struct SnFileWin32 {
 
 typedef struct SnDirWin32 {
     HANDLE handle;
-    WIN32_FIND_DATAA data;
+    WIN32_FIND_DATAW data;
     bool first;
+    char current_name[260 * 4];
 } SnDirWin32;
 
     #define DHDL(dir) (((SnDirWin32 *)(dir))->handle)
     #define DDATA(dir) (((SnDirWin32 *)(dir))->data)
     #define DFIRST(dir) (((SnDirWin32 *)(dir))->first)
+    #define DCURR_NAME(dir) (((SnDirWin32 *)(dir))->current_name)
 
 SN_STATIC_ASSERT(sizeof(SnFileWin32) <= sizeof(SnFile), "SnFile size is not large enough!");
 SN_STATIC_ASSERT(sizeof(SnDirWin32) <= sizeof(SnDir), "SnDir size is not large enough!");
@@ -43,7 +46,10 @@ static DWORD file_creation(int flags) {
 }
 
 bool sn_file_open(const char *path, SnFileOpenFlag flags, SnFile *file) {
-    HDL(file) = CreateFileA(path, file_access(flags), FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+
+    HDL(file) = CreateFileW(wpath, file_access(flags), FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                             file_creation(flags), FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (HDL(file) == INVALID_HANDLE_VALUE) return false;
@@ -130,14 +136,15 @@ uint64_t sn_file_size(SnFile *file) {
 }
 
 bool sn_dir_open(const char *path, SnDir *dir) {
-    char pattern[MAX_PATH];
-    size_t i = 0;
-    for (i = 0; path[i] && i < SN_ARRAY_LENGTH(pattern); ++i) pattern[i] = path[i];
-    pattern[i++] = '\\';
-    pattern[i++] = '*';
-    pattern[i] = 0;
+    wchar_t wpath[4096];
+    size_t written = sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath) - 2);
+    if (written == (size_t)-1) return false;
 
-    DHDL(dir) = FindFirstFileA(pattern, &DDATA(dir));
+    wpath[written] = L'\\';
+    wpath[written + 1] = L'*';
+    wpath[written + 2] = 0;
+
+    DHDL(dir) = FindFirstFileW(wpath, &DDATA(dir));
     if (DHDL(dir) == INVALID_HANDLE_VALUE) return false;
 
     DFIRST(dir) = true;
@@ -146,13 +153,16 @@ bool sn_dir_open(const char *path, SnDir *dir) {
 }
 
 bool sn_dir_read(SnDir *dir, SnDirEntry *entry) {
-    WIN32_FIND_DATAA *data = &DDATA(dir);
+    WIN32_FIND_DATAW *data = &DDATA(dir);
 
     if (DFIRST(dir)) DFIRST(dir) = false;
-    else if (!FindNextFileA(DHDL(dir), data)) return false;
+    else if (!FindNextFileW(DHDL(dir), data)) return false;
+
+    if (sn_utf16_to_utf8(data->cFileName, DCURR_NAME(dir), 260 * 4) == (size_t)-1)
+        return false;
 
     *entry = (SnDirEntry){
-        .name = data->cFileName,
+        .name = DCURR_NAME(dir),
         .is_directory = (data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
         .is_symlink = (data->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0,
     };
@@ -169,56 +179,82 @@ void sn_dir_close(SnDir *dir) {
 }
 
 bool sn_path_exists(const char *path) {
-    return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+    return GetFileAttributesW(wpath) != INVALID_FILE_ATTRIBUTES;
 }
 
 bool sn_path_is_file(const char *path) {
-    DWORD attr = GetFileAttributesA(path);
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+    DWORD attr = GetFileAttributesW(wpath);
     return attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool sn_path_is_directory(const char *path) {
-    DWORD attr = GetFileAttributesA(path);
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+    DWORD attr = GetFileAttributesW(wpath);
     return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool sn_file_delete(const char *path) {
-    return DeleteFileA(path);
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+    return DeleteFileW(wpath);
 }
 
 bool sn_dir_create(const char *path, bool recursive) {
-    if (!recursive) return CreateDirectoryA(path, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
 
-    char buffer[1024] = {0};
-    for (size_t i = 0; path[i]; ++i) {
-        SN_ASSERT(i < SN_ARRAY_LENGTH(buffer));
-        buffer[i] = path[i];
-        if (path[i] == '\\' || path[i] == '/') {
-            buffer[i] = 0;
-            if (!CreateDirectoryA(buffer, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+    if (!recursive) return CreateDirectoryW(wpath, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
+
+    for (size_t i = 0; wpath[i]; ++i) {
+        if (wpath[i] == L'\\' || wpath[i] == L'/') {
+            wchar_t saved = wpath[i];
+            wpath[i] = 0;
+            if (!CreateDirectoryW(wpath, NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
                 return false;
-            buffer[i] = SN_PATH_SEPARATOR;
+            wpath[i] = L'\\';
         }
     }
 
-    return CreateDirectoryA(buffer, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
+    return CreateDirectoryW(wpath, NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
 }
 
 bool sn_dir_delete(const char *path) {
-    return RemoveDirectoryA(path);
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+    return RemoveDirectoryW(wpath);
 }
 
 bool sn_file_copy(const char *src, const char *dst, bool overwrite) {
-    return CopyFileA(src, dst, !overwrite);
+    wchar_t wsrc[4096];
+    if (sn_utf8_to_utf16(src, wsrc, SN_ARRAY_LENGTH(wsrc)) == (size_t)-1) return false;
+
+    wchar_t wdst[4096];
+    if (sn_utf8_to_utf16(dst, wdst, SN_ARRAY_LENGTH(wdst)) == (size_t)-1) return false;
+
+    return CopyFileW(wsrc, wdst, !overwrite);
 }
 
 bool sn_file_move(const char *src, const char *dst, bool overwrite) {
-    return MoveFileExA(src, dst, (overwrite ? MOVEFILE_REPLACE_EXISTING : 0));
+    wchar_t wsrc[4096];
+    if (sn_utf8_to_utf16(src, wsrc, SN_ARRAY_LENGTH(wsrc)) == (size_t)-1) return false;
+
+    wchar_t wdst[4096];
+    if (sn_utf8_to_utf16(dst, wdst, SN_ARRAY_LENGTH(wdst)) == (size_t)-1) return false;
+
+    return MoveFileExW(wsrc, wdst, (overwrite ? MOVEFILE_REPLACE_EXISTING : 0));
 }
 
 bool sn_file_stat(const char *path, SnFileInfo *info) {
+    wchar_t wpath[4096];
+    if (sn_utf8_to_utf16(path, wpath, SN_ARRAY_LENGTH(wpath)) == (size_t)-1) return false;
+
     WIN32_FILE_ATTRIBUTE_DATA data;
-    if (!GetFileAttributesExA(path, GetFileExInfoStandard, &data)) return false;
+    if (!GetFileAttributesExW(wpath, GetFileExInfoStandard, &data)) return false;
 
     ULARGE_INTEGER size;
     size.HighPart = data.nFileSizeHigh;
