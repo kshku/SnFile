@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.15...3.31)
 
-project(SnFile VERSION 0.2.0 DESCRIPTION "A File system abstraction library" LANGUAGES C)
+project(SnFile VERSION 0.2.1 DESCRIPTION "A File system abstraction library" LANGUAGES C)
 
 include(FetchContent)
 FetchContent_Declare(sncore
     GIT_REPOSITORY https://github.com/kshku/SnCore.git
-    GIT_TAG v0.2.0
+    GIT_TAG v0.3.1
 )
 FetchContent_MakeAvailable(sncore)
 
