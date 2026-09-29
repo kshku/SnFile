@@ -86,7 +86,7 @@ bool sn_file_flush(SnFile *file) {
 uint64_t sn_file_size(SnFile *file) {
     struct stat st;
     if (fstat(FD(file), &st) != 0) return 0;
-    return st.st_size;
+    return (uint64_t)st.st_size;
 }
 
 bool sn_dir_open(const char *path, SnDir *dir) {
@@ -168,7 +168,7 @@ bool sn_file_copy(const char *src, const char *dst, bool overwrite) {
     char buffer[4096];
     int64_t ret;
     while ((ret = sn_file_read(&srcf, buffer, SN_ARRAY_LENGTH(buffer))) > 0)
-        sn_file_write(&dstf, buffer, ret);
+        sn_file_write(&dstf, buffer, (uint64_t)ret);  // ret > 0 by the loop condition
 
     sn_file_close(&srcf);
     sn_file_close(&dstf);
@@ -185,11 +185,11 @@ bool sn_file_stat(const char *path, SnFileInfo *info) {
     if (stat(path, &st) != 0) return false;
 
     *info = (SnFileInfo){
-        .size = st.st_size,
+        .size = (uint64_t)st.st_size,
 
-        .modified_time = st.st_mtime,
-        .accessed_time = st.st_atime,
-        .change_time = st.st_ctime,
+        .modified_time = (uint64_t)st.st_mtime,
+        .accessed_time = (uint64_t)st.st_atime,
+        .change_time = (uint64_t)st.st_ctime,
 
         .is_file = S_ISREG(st.st_mode),
         .is_directory = S_ISDIR(st.st_mode),

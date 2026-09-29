@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.3] - 2026-09-28
+
+### Changed
+- -Wconversion and -Wsign-conversion are on for gcc and clang. sn_file_size,
+  sn_file_stat and the copy loop in sn_file_copy left their widening from the
+  stat fields and the read result to implicit conversions. The win32 side already
+  cast these explicitly, so the nix side now matches it
+
 ## [0.2.2] - 2026-09-28
 
 ### Fixed
