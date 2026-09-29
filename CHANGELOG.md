@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2] - 2026-09-28
+
+### Fixed
+- sn_file_open() took an int in the header but an SnFileOpenFlag in the win32
+  implementation, which do not match. A definition whose parameter type differs
+  from its declaration is an error, so the Windows build could not have compiled
+  this. The parameter is an SnFileOpenFlag everywhere now, which also matches
+  how the rest of the API takes its enums
+
 ## [0.2.1] - 2026-09-28
 
 ### Changed

@@ -83,12 +83,12 @@ typedef struct SnDirEntry {
  * @brief Open a file.
  *
  * @param path The path to file.
- * @param flags Flags for opening.
- * @param allocator Allocator hooks.
+ * @param flags Bitwise or of SnFileOpenFlag values.
+ * @param file Receives the opened file.
  *
  * @return Returns true on success, false otherwise.
  */
-SN_FILE_API bool sn_file_open(const char *path, int flags, SnFile *file);
+SN_FILE_API bool sn_file_open(const char *path, SnFileOpenFlag flags, SnFile *file);
 
 /**
  * @brief Closes the opened file.

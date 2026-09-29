@@ -25,7 +25,7 @@ typedef struct SnDirPosix {
 SN_STATIC_ASSERT(sizeof(SnFilePosix) <= sizeof(SnFile), "SnFile size is not large enough!");
 SN_STATIC_ASSERT(sizeof(SnDirPosix) <= sizeof(SnDir), "SnDir size is not large enough!");
 
-bool sn_file_open(const char *path, int flags, SnFile *file) {
+bool sn_file_open(const char *path, SnFileOpenFlag flags, SnFile *file) {
     int open_flags = 0;
 
     if (flags & SN_FILE_OPEN_FLAG_READ) open_flags |= O_RDONLY;
@@ -162,7 +162,7 @@ bool sn_file_copy(const char *src, const char *dst, bool overwrite) {
 
     if (!sn_file_open(src, SN_FILE_OPEN_FLAG_READ, &srcf)) return false;
 
-    int flags = SN_FILE_OPEN_FLAG_CREATE | SN_FILE_OPEN_FLAG_WRITE;
+    SnFileOpenFlag flags = SN_FILE_OPEN_FLAG_CREATE | SN_FILE_OPEN_FLAG_WRITE;
     if (!sn_file_open(dst, flags, &dstf)) return false;
 
     char buffer[4096];
